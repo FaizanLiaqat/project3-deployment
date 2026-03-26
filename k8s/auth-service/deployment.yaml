@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: faizanliaqat/auth-service:6e51706e56a90ee90cff46eabe785cc5ce723c1b # updated by CI
+          image: faizanliaqat/auth-service:e5ec2c1e05bb794ffaf8e207f8ce5171bed05856 # updated by CI
           imagePullPolicy: Always
           ports:
             - containerPort: 3002
@@ -57,4 +57,4 @@ spec:
   template:
     spec:
       containers:
-        - image: faizanliaqat/auth-service:6e51706e56a90ee90cff46eabe785cc5ce723c1b
+        - image: faizanliaqat/auth-service:e5ec2c1e05bb794ffaf8e207f8ce5171bed05856
