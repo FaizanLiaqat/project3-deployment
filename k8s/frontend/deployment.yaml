@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: YOUR_DOCKERHUB_USERNAME/frontend:latest   # updated by CI
+          image: faizanliaqat/frontend:latest   # updated by CI
           imagePullPolicy: Always
           ports:
             - containerPort: 80

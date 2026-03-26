@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: YOUR_DOCKERHUB_USERNAME/auth-service:latest   # updated by CI
+          image: faizanliaqat/auth-service:latest   # updated by CI
           imagePullPolicy: Always
           ports:
             - containerPort: 3002

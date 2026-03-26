@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: YOUR_DOCKERHUB_USERNAME/backend:latest   # updated by CI
+          image: faizanliaqat/backend:latest   # updated by CI
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
