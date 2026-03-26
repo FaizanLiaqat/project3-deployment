@@ -11,7 +11,9 @@ spec:
   source:
     repoURL: https://github.com/FaizanLiaqat/project3-deployment.git
     targetRevision: main
-    path: k8s                         # ArgoCD watches everything under k8s/
+    path: k8s
+    directory:
+      recurse: true                         # ArgoCD watches everything under k8s/
 
   destination:
     server: https://kubernetes.default.svc
