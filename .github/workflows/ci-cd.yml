@@ -1,0 +1,97 @@
+name: CI - Build, Push & Update Manifests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  # ─── BUILD & PUSH DOCKER IMAGES ─────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - name: frontend
+            context: ./app/frontend
+          - name: backend
+            context: ./app/backend
+          - name: auth-service
+            context: ./app/auth-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.service.name }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:latest
+            ${{ env.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:${{ env.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── UPDATE K8S MANIFESTS ────────────────────────────────────────────────────
+  update-manifests:
+    name: Update Kubernetes Manifests
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install yq (YAML processor)
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Update frontend image tag
+        run: |
+          yq e -i \
+            '.spec.template.spec.containers[0].image = "${{ env.DOCKERHUB_USERNAME }}/frontend:${{ env.IMAGE_TAG }}"' \
+            k8s/frontend/deployment.yaml
+
+      - name: Update backend image tag
+        run: |
+          yq e -i \
+            '.spec.template.spec.containers[0].image = "${{ env.DOCKERHUB_USERNAME }}/backend:${{ env.IMAGE_TAG }}"' \
+            k8s/backend/deployment.yaml
+
+      - name: Update auth-service image tag
+        run: |
+          yq e -i \
+            '.spec.template.spec.containers[0].image = "${{ env.DOCKERHUB_USERNAME }}/auth-service:${{ env.IMAGE_TAG }}"' \
+            k8s/auth-service/deployment.yaml
+
+      - name: Commit and push updated manifests
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add k8s/
+          git diff --staged --quiet || \
+            git commit -m "ci: update image tags to ${{ env.IMAGE_TAG }} [skip ci]"
+          git push

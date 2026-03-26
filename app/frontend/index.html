@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Microservices App</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Microservices Demo</h1>
+  <button onclick="fetchItems()">Load Items from Backend</button>
+  <ul id="items"></ul>
+  <script>
+    const BACKEND = window.BACKEND_URL || 'http://localhost:3001';
+    async function fetchItems() {
+      const res = await fetch(`${BACKEND}/api/items`);
+      const data = await res.json();
+      document.getElementById('items').innerHTML =
+        data.map(i => `<li>${i.id}. ${i.name}</li>`).join('');
+    }
+  </script>
+</body>
+</html>

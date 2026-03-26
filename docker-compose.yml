@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./app/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      JWT_SECRET: dev-secret-change-in-prod
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
