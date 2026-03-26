@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: faizanliaqat/auth-service:6e51706e56a90ee90cff46eabe785cc5ce723c1b # updated by CI
+          image: faizanliaqat/auth-service:6e51706e56a90ee90cff46eabe785cc5ce723c1b
           imagePullPolicy: Always
           ports:
             - containerPort: 3002
@@ -54,7 +54,3 @@ spec:
       port: 3002
       targetPort: 3002
   type: ClusterIP
-  template:
-    spec:
-      containers:
-        - image: faizanliaqat/auth-service:6e51706e56a90ee90cff46eabe785cc5ce723c1b
