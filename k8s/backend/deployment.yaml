@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: faizanliaqat/backend:cdb02b055665e85855f65cec6bc78c39c5cc6db8
+          image: faizanliaqat/backend:6e51706e56a90ee90cff46eabe785cc5ce723c1b
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
@@ -61,4 +61,4 @@ spec:
   template:
     spec:
       containers:
-        - image: faizanliaqat/backend:cdb02b055665e85855f65cec6bc78c39c5cc6db8
+        - image: faizanliaqat/backend:6e51706e56a90ee90cff46eabe785cc5ce723c1b
