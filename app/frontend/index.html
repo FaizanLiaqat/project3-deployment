@@ -16,7 +16,7 @@
   <button onclick="fetchItems()">Load Items from Backend</button>
   <ul id="items"></ul>
   <script>
-    const BACKEND = window.BACKEND_URL || 'http://localhost:3001';
+    const BACKEND = window.BACKEND_URL || 'http://3.93.126.10:30082';
     async function fetchItems() {
       const res = await fetch(`${BACKEND}/api/items`);
       const data = await res.json();
