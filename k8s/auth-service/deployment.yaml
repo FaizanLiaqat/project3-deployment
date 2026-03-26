@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: faizanliaqat/auth-service:latest
+          image: faizanliaqat/auth-service:f2a2e2aafd71084f197f159072b767901e7cf131
           imagePullPolicy: Always
           ports:
             - containerPort: 3002
