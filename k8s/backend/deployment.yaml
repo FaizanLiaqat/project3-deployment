@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: faizanliaqat/backend:latest   # updated by CI
+          image: faizanliaqat/backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
@@ -56,4 +56,5 @@ spec:
     - protocol: TCP
       port: 3001
       targetPort: 3001
-  type: ClusterIP
+      nodePort: 30082
+  type: NodePort
