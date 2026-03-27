@@ -21,6 +21,11 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 80
+          env:
+            - name: BACKEND_URL
+              value: "http://backend:3001"
+            - name: AUTH_URL
+              value: "http://auth-service:3002"
           resources:
             requests:
               cpu: "50m"
