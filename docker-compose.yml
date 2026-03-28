@@ -1,41 +1,94 @@
 version: '3.9'
 
 services:
-  frontend:
-    build:
-      context: ./app/frontend
-      dockerfile: Dockerfile
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
-    networks:
-      - app-network
 
-  backend:
-    build:
-      context: ./app/backend
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
+  # ── PostgreSQL ────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
     environment:
-      NODE_ENV: development
-      PORT: 3001
+      POSTGRES_DB:       docvault
+      POSTGRES_USER:     docvault_user
+      POSTGRES_PASSWORD: changeme
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./app/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docvault_user -d docvault"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ── Auth Service ──────────────────────────────────────────────
   auth-service:
     build:
       context: ./app/auth-service
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "3002:3002"
     environment:
-      NODE_ENV: development
-      PORT: 3002
-      JWT_SECRET: dev-secret-change-in-prod
+      PORT:        3002
+      NODE_ENV:    production
+      JWT_SECRET:  "change-this-to-a-long-random-string-in-prod"
+      DB_HOST:     postgres
+      DB_PORT:     5432
+      DB_NAME:     docvault
+      DB_USER:     docvault_user
+      DB_PASSWORD: changeme
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - app-network
+
+  # ── Backend ───────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      PORT:        3001
+      NODE_ENV:    production
+      JWT_SECRET:  "change-this-to-a-long-random-string-in-prod"
+      DB_HOST:     postgres
+      DB_PORT:     5432
+      DB_NAME:     docvault
+      DB_USER:     docvault_user
+      DB_PASSWORD: changeme
+      UPLOAD_DIR:  /mnt/pdfs
+    volumes:
+      # Mount the EBS volume path into the container
+      - /mnt/ebs-pdfs:/mnt/pdfs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # ── Frontend ──────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+      - auth-service
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
 
 networks:
   app-network:

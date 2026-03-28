@@ -2,9 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-service
-  namespace: default
-  labels:
-    app: auth-service
 spec:
   replicas: 2
   selector:
@@ -17,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: faizanliaqat/auth-service:f2a2e2aafd71084f197f159072b767901e7cf131
+          image: faizanliaqat/auth-service:latest # CI will update this
           imagePullPolicy: Always
           ports:
             - containerPort: 3002
@@ -27,13 +24,25 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: jwt-secret
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "250m"
-              memory: "256Mi"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_DB
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_PASSWORD
           readinessProbe:
             httpGet:
               path: /health
@@ -45,7 +54,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: auth-service
-  namespace: default
 spec:
   selector:
     app: auth-service
@@ -53,4 +61,5 @@ spec:
     - protocol: TCP
       port: 3002
       targetPort: 3002
-  type: ClusterIP
+      nodePort: 30083 # <--- THIS EXPOSES IT TO THE INTERNET
+  type: NodePort

@@ -110,11 +110,25 @@ resource "aws_instance" "app" {
   key_name               = aws_key_pair.deployer.key_name
 
   root_block_device {
-    volume_size = 30
+    volume_size = 20
     volume_type = "gp3"
   }
 
   tags = { Name = "${var.project_name}-ec2" }
+}
+# EBS Storage
+resource "aws_ebs_volume" "data_disk" {
+  availability_zone = aws_instance.app.availability_zone
+  size              = 10 # 10GB for Postgres & PDFs
+  type              = "gp3"
+  tags = { Name = "${var.project_name}-ec2" }
+}
+
+#  Attach the EBS storage
+resource "aws_volume_attachment" "ebs_att" {
+  device_name = "/dev/sdh"
+  volume_id   = aws_ebs_volume.data_disk.id
+  instance_id = aws_instance.app.id
 }
 
 # ─── ELASTIC IP ────────────────────────────────────────────────────────────────

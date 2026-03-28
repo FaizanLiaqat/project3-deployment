@@ -1,0 +1,85 @@
+# 1. THE SCHEMA (Automated Table Creation)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-config
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        first_name VARCHAR(100),
+        last_name VARCHAR(100),
+        email VARCHAR(255) UNIQUE,
+        username VARCHAR(100) UNIQUE,
+        password_hash VARCHAR(255),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS documents (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        original_name VARCHAR(255),
+        stored_name VARCHAR(255),
+        file_path TEXT,
+        file_size BIGINT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+---
+# 2. THE POSTGRES SERVER
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "docvault" # Matches Hamza's DB Name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data # Saves data to EBS
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d # Runs SQL automatically
+      volumes:
+        - name: pgdata
+          hostPath:
+            path: /mnt/data/postgres # Path on the 10GB EBS disk
+        - name: init-script
+          configMap:
+            name: postgres-init-config
+---
+# 3. THE SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
