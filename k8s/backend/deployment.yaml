@@ -19,42 +19,42 @@ spec:
         fsGroup: 1000
       containers:
         - name: backend
-          image: faizanliaqat/backend:f2a2e2aafd71084f197f159072b767901e7cf131
+          image: faizanliaqat/backend:d74a39409f0f26ff52dfa78bd792844f4cc6dff3
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
-              env:
-                - name: NODE_ENV
-                  value: "production"
-                - name: DB_HOST
-                  value: "postgres"
-                - name: DB_PORT
-                  value: "5432"
-                - name: DB_NAME
-                  valueFrom:
-                    secretKeyRef:
-                      name: app-secrets
-                      key: POSTGRES_DB
-                - name: DB_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: app-secrets
-                      key: POSTGRES_USER
-                - name: DB_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: app-secrets
-                      key: POSTGRES_PASSWORD
-                - name: JWT_SECRET
-                  valueFrom:
-                    secretKeyRef:
-                      name: app-secrets
-                      key: jwt-secret
-                - name: UPLOAD_DIR
-                  value: "/mnt/pdfs"
-              volumeMounts:
-                - name: pdfs-storage
-                  mountPath: /mnt/pdfs
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_DB
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: jwt-secret
+            - name: UPLOAD_DIR
+              value: "/mnt/pdfs"
+          volumeMounts:
+            - name: pdfs-storage
+              mountPath: /mnt/pdfs
           resources:
             requests:
               cpu: "100m"
@@ -68,10 +68,11 @@ spec:
               port: 3001
             initialDelaySeconds: 5
             periodSeconds: 10
-          volumes:
-            - name: pdfs-storage
-              persistentVolumeClaim:
-                claimName: pdfs-pvc
+      volumes:
+        - name: pdfs-storage
+          hostPath:
+            path: /mnt/data/pdfs
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
