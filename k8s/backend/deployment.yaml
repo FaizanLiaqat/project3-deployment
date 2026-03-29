@@ -19,7 +19,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: backend
-          image: faizanliaqat/backend:8aee496cee7a18738bc6dced2498b8f8b815d010
+          image: faizanliaqat/backend:d992e3a9ac5d92b0fe7bd916b4d969a3f527c4ea
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
