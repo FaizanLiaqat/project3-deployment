@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: faizanliaqat/frontend:d992e3a9ac5d92b0fe7bd916b4d969a3f527c4ea # CI will update this
+          image: faizanliaqat/frontend:889422b0203d6c02e350ac4641b39863085644c2 # CI will update this
           imagePullPolicy: Always
           ports:
             - containerPort: 80
