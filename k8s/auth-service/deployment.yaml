@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: faizanliaqat/auth-service:889422b0203d6c02e350ac4641b39863085644c2 # CI will update this
+          image: faizanliaqat/auth-service:72fdf459f9e1483aa218c49e6482b9fb709140c2 # CI will update this
           imagePullPolicy: Always
           ports:
             - containerPort: 3002
